@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXA · Asistente Académico Inteligente</title>
+<meta name="description" content="NEXA — Tu organización académica, simplificada. App con modo sin conexión, bóveda biométrica e IA. Proyecto Scrum, TESH Semestre 5.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#1A73E8; --indigo:#6C63FF; --secondary:#34A853; --accent:#FF6B6B;
+  --bg:#F8F9FA; --surface:#FFFFFF; --text:#0F172A; --muted:#5F6368;
+  --border:rgba(15,23,42,.08);
+  --grad:linear-gradient(135deg,#1A73E8,#6C63FF 55%,#FF6B6B);
+  --grad2:linear-gradient(135deg,#34A853,#1A73E8);
+  --shadow:0 10px 40px rgba(26,115,232,.12);
+  --shadow-lg:0 30px 70px rgba(26,115,232,.18);
+  --radius:18px;
+}
+html.dark{
+  --bg:#070b14; --surface:#0f172a; --text:#e2e8f0; --muted:#94a3b8;
+  --border:rgba(148,163,184,.14);
+  --shadow:0 10px 40px rgba(0,0,0,.4); --shadow-lg:0 30px 70px rgba(0,0,0,.55);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.65;overflow-x:hidden;transition:background .4s,color .4s}
+.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+.mono{font-family:'JetBrains Mono',monospace}
+::selection{background:var(--indigo);color:#fff}
+
+/* scroll progress */
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:var(--grad);z-index:999;box-shadow:0 0 12px rgba(108,99,255,.7)}
+/* cursor glow */
+#glow{position:fixed;width:420px;height:420px;border-radius:50%;pointer-events:none;z-index:1;
+  background:radial-gradient(circle,rgba(108,99,255,.16),transparent 65%);transform:translate(-50%,-50%);
+  transition:opacity .3s;mix-blend-mode:multiply}
+html.dark #glow{mix-blend-mode:screen;background:radial-gradient(circle,rgba(108,99,255,.22),transparent 65%)}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.nav-in{max-width:1200px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.logo{display:flex;align-items:center;gap:11px;font-weight:900;font-size:1.3rem;text-decoration:none;color:var(--text);letter-spacing:-.02em}
+.logo-badge{width:40px;height:40px;border-radius:13px;background:var(--grad);display:grid;place-items:center;color:#fff;font-size:1.15rem;font-weight:900;box-shadow:0 8px 22px rgba(108,99,255,.45);animation:float 4s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-4px)}}
+.nav-links{display:flex;gap:24px;list-style:none;align-items:center}
+.nav-links a{text-decoration:none;color:var(--muted);font-weight:700;font-size:.9rem;transition:.25s;position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-5px;left:0;width:0;height:2px;background:var(--grad);transition:.3s;border-radius:2px}
+.nav-links a:hover{color:var(--text)}
+.nav-links a:hover::after{width:100%}
+.cta-top{background:var(--grad);color:#fff!important;padding:10px 22px;border-radius:999px;box-shadow:0 8px 22px rgba(26,115,232,.35)}
+.cta-top::after{display:none}
+.cta-top:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(26,115,232,.45)}
+.icon-btn{background:var(--surface);border:1px solid var(--border);width:40px;height:40px;border-radius:12px;cursor:pointer;font-size:1.05rem;display:grid;place-items:center;color:var(--text);transition:.25s}
+.icon-btn:hover{transform:translateY(-3px);border-color:var(--primary)}
+.burger{display:none;background:none;border:0;font-size:1.5rem;cursor:pointer;color:var(--text)}
+
+/* HERO */
+header{padding:160px 0 100px;position:relative;overflow:hidden}
+#mesh{position:absolute;inset:0;z-index:0;opacity:.9}
+.blob{position:absolute;border-radius:50%;filter:blur(100px);z-index:0;pointer-events:none}
+.b1{width:520px;height:520px;background:rgba(26,115,232,.4);top:-160px;right:-140px;animation:move1 18s ease-in-out infinite}
+.b2{width:420px;height:420px;background:rgba(255,107,107,.32);bottom:-180px;left:-140px;animation:move2 22s ease-in-out infinite}
+.b3{width:340px;height:340px;background:rgba(52,168,83,.28);top:35%;left:48%;animation:move1 15s ease-in-out infinite reverse}
+@keyframes move1{50%{transform:translate(-60px,50px) scale(1.15)}}
+@keyframes move2{50%{transform:translate(70px,-50px) scale(1.1)}}
+header .wrap{position:relative;z-index:2}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;background:color-mix(in srgb,var(--primary) 12%,transparent);color:var(--primary);font-weight:800;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;padding:9px 18px;border-radius:999px;margin-bottom:24px;border:1px solid color-mix(in srgb,var(--primary) 25%,transparent)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--secondary);box-shadow:0 0 0 0 rgba(52,168,83,.6);animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 10px rgba(52,168,83,0)}100%{box-shadow:0 0 0 0 rgba(52,168,83,0)}}
+h1{font-size:clamp(2.7rem,6.4vw,4.8rem);font-weight:900;line-height:1.02;letter-spacing:-.04em}
+.grad-text{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:200% auto;animation:shine 4s linear infinite}
+@keyframes shine{to{background-position:200% center}}
+.type-wrap{font-size:clamp(1.05rem,2vw,1.4rem);font-weight:700;color:var(--primary);min-height:1.7em;margin-top:14px}
+.cursor{display:inline-block;width:3px;height:1.1em;background:var(--accent);vertical-align:-2px;animation:blink .8s step-end infinite;margin-left:2px}
+@keyframes blink{50%{opacity:0}}
+.hero-p{font-size:1.15rem;color:var(--muted);max-width:640px;margin:22px 0 36px}
+.btn-row{display:flex;gap:16px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:9px;padding:16px 36px;border-radius:999px;font-weight:800;font-size:1rem;text-decoration:none;transition:.3s;border:0;cursor:pointer;position:relative;overflow:hidden}
+.btn-main{background:var(--grad);color:#fff;box-shadow:0 14px 34px rgba(26,115,232,.4)}
+.btn-main:hover{transform:translateY(-4px) scale(1.02);box-shadow:0 22px 48px rgba(26,115,232,.5)}
+.btn-ghost{background:var(--surface);color:var(--text);border:2px solid var(--border)}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary);transform:translateY(-4px)}
+.btn::before{content:'';position:absolute;top:50%;left:50%;width:0;height:0;background:rgba(255,255,255,.35);border-radius:50%;transform:translate(-50%,-50%);transition:.5s}
+.btn:hover::before{width:300px;height:300px}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:18px;margin-top:74px}
+.stat{background:var(--surface);border-radius:var(--radius);padding:28px 18px;text-align:center;box-shadow:var(--shadow);border:1px solid var(--border);transition:.35s;position:relative;overflow:hidden}
+.stat:hover{transform:translateY(-8px);box-shadow:var(--shadow-lg)}
+.stat b{display:block;font-size:2.5rem;font-weight:900;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1}
+.stat span{font-size:.82rem;color:var(--muted);font-weight:700;letter-spacing:.03em}
+
+/* SECTIONS */
+section{padding:96px 0;position:relative;z-index:2}
+.sec-head{text-align:center;max-width:740px;margin:0 auto 64px}
+.sec-tag{color:var(--primary);font-weight:800;letter-spacing:.16em;text-transform:uppercase;font-size:.78rem}
+.sec-head h2{font-size:clamp(2rem,4.2vw,3rem);font-weight:900;margin:14px 0 18px;letter-spacing:-.03em}
+.sec-head p{color:var(--muted);font-size:1.06rem}
+
+/* FEATURES */
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:26px}
+.feat{background:var(--surface);padding:36px 30px;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);transition:.4s;position:relative;overflow:hidden;transform-style:preserve-3d}
+.feat:hover{box-shadow:var(--shadow-lg);border-color:color-mix(in srgb,var(--primary) 40%,transparent)}
+.feat::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--grad);transform:scaleX(0);transform-origin:left;transition:.45s}
+.feat:hover::before{transform:scaleX(1)}
+.feat .ico{width:60px;height:60px;border-radius:16px;display:grid;place-items:center;font-size:1.7rem;background:color-mix(in srgb,var(--primary) 12%,transparent);margin-bottom:20px;transition:.4s}
+.feat:hover .ico{transform:scale(1.12) rotate(-6deg);background:var(--grad)}
+.feat h3{font-size:1.22rem;font-weight:800;margin-bottom:10px}
+.feat p{color:var(--muted);font-size:.95rem}
+
+/* SHOWCASE */
+.showcase{display:grid;grid-template-columns:1.05fr .95fr;gap:64px;align-items:center}
+.phone{width:300px;height:610px;background:linear-gradient(160deg,#1e293b,#0f172a);border-radius:46px;padding:13px;box-shadow:0 50px 90px rgba(15,23,42,.4),0 0 0 2px rgba(255,255,255,.06) inset;margin:0 auto;position:relative;animation:float 6s ease-in-out infinite}
+.screen{background:var(--bg);border-radius:35px;height:100%;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.notch{position:absolute;top:13px;left:50%;transform:translateX(-50%);width:112px;height:26px;background:#0f172a;border-radius:0 0 16px 16px;z-index:5}
+.app-bar{background:var(--grad);color:#fff;padding:46px 20px 20px;font-weight:800;font-size:1.05rem;position:relative}
+.app-bar small{display:block;font-weight:500;font-size:.74rem;opacity:.88;margin-top:3px}
+.app-body{padding:14px;display:flex;flex-direction:column;gap:10px;flex:1;overflow:hidden}
+.mini-card{background:var(--surface);border-radius:15px;padding:13px 15px;box-shadow:0 5px 16px rgba(0,0,0,.08);display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border);animation:slideIn .6s backwards}
+.mini-card:nth-child(1){animation-delay:.1s}.mini-card:nth-child(2){animation-delay:.25s}.mini-card:nth-child(3){animation-delay:.4s}.mini-card:nth-child(4){animation-delay:.55s}.mini-card:nth-child(5){animation-delay:.7s}
+@keyframes slideIn{from{opacity:0;transform:translateX(30px)}}
+.mini-card b{font-size:.85rem;color:var(--text)}
+.mini-card small{color:var(--muted);font-size:.7rem;display:block}
+.chip{font-size:.6rem;font-weight:800;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.chip.ok{background:rgba(52,168,83,.16);color:var(--secondary)}
+.chip.warn{background:rgba(255,107,107,.16);color:var(--accent)}
+.chip.info{background:rgba(26,115,232,.14);color:var(--primary)}
+.offline-bar{background:#fff7e6;border:1px solid #ffe1a6;color:#a06b00;font-size:.68rem;font-weight:800;padding:8px 12px;border-radius:11px;text-align:center}
+html.dark .offline-bar{background:rgba(255,193,7,.12);border-color:rgba(255,193,7,.3);color:#ffca28}
+.bottom-nav{background:var(--surface);display:flex;justify-content:space-around;padding:13px 6px;border-top:1px solid var(--border);font-size:1.15rem}
+.bottom-nav span{opacity:.35;transition:.3s}
+.bottom-nav span.on{opacity:1;position:relative;transform:translateY(-2px)}
+.bottom-nav span.on::after{content:'';position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:18px;height:3px;border-radius:3px;background:var(--primary)}
+.check-list{list-style:none;display:flex;flex-direction:column;gap:15px}
+.check-list li{display:flex;gap:15px;align-items:flex-start;background:var(--surface);padding:17px 20px;border-radius:15px;box-shadow:var(--shadow);border:1px solid var(--border);transition:.3s}
+.check-list li:hover{transform:translateX(8px);border-color:color-mix(in srgb,var(--primary) 35%,transparent)}
+.check-list .tick{width:27px;height:27px;min-width:27px;border-radius:50%;background:var(--grad2);color:#fff;display:grid;place-items:center;font-weight:900;font-size:.8rem}
+.check-list b{display:block;font-size:.98rem}
+.check-list small{color:var(--muted);font-size:.87rem}
+
+/* SPRINTS */
+.sprint-track{position:relative;display:grid;gap:22px}
+.sprint{background:var(--surface);border-radius:var(--radius);padding:28px 32px;box-shadow:var(--shadow);border:1px solid var(--border);display:grid;grid-template-columns:72px 1fr auto;gap:26px;align-items:center;transition:.35s}
+.sprint:hover{transform:translateX(10px);box-shadow:var(--shadow-lg)}
+.sprint .num{width:72px;height:72px;border-radius:20px;background:color-mix(in srgb,var(--primary) 12%,transparent);display:grid;place-items:center;font-size:1.8rem;font-weight:900;color:var(--primary)}
+.sprint.done .num{background:color-mix(in srgb,var(--secondary) 16%,transparent);color:var(--secondary)}
+.sprint.done{border-color:color-mix(in srgb,var(--secondary) 40%,transparent)}
+.sprint h3{font-size:1.18rem;font-weight:800}
+.sprint .dates{color:var(--muted);font-size:.84rem;font-weight:700;margin-top:2px}
+.sprint .ep{color:var(--muted);font-size:.9rem;margin-top:8px}
+.pill{padding:10px 22px;border-radius:999px;font-size:.76rem;font-weight:800;letter-spacing:.06em;white-space:nowrap}
+.pill.done{background:rgba(52,168,83,.16);color:var(--secondary)}
+.pill.plan{background:color-mix(in srgb,var(--primary) 12%,transparent);color:var(--primary)}
+.prog{height:8px;background:color-mix(in srgb,var(--text) 8%,transparent);border-radius:99px;margin-top:14px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--grad);border-radius:99px;width:0;transition:width 1.6s cubic-bezier(.2,.8,.2,1)}
+
+/* METRICS / CHART */
+.metrics{display:grid;grid-template-columns:1.2fr .8fr;gap:34px;align-items:center}
+.card{background:var(--surface);border-radius:22px;padding:34px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.chart-title{font-weight:800;font-size:1.1rem;margin-bottom:6px}
+.chart-sub{color:var(--muted);font-size:.85rem;margin-bottom:22px}
+.bar-row{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.bar-row .lbl{width:150px;font-size:.85rem;font-weight:700;flex-shrink:0}
+.bar-track{flex:1;height:14px;background:color-mix(in srgb,var(--text) 7%,transparent);border-radius:99px;overflow:hidden}
+.bar-fill{height:100%;border-radius:99px;width:0;transition:width 1.6s cubic-bezier(.2,.8,.2,1)}
+.bar-val{font-size:.8rem;font-weight:800;color:var(--muted);width:48px;text-align:right}
+.mini-stats{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px}
+.ms{background:color-mix(in srgb,var(--primary) 7%,transparent);border-radius:16px;padding:20px;text-align:center}
+.ms b{display:block;font-size:1.9rem;font-weight:900;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ms span{font-size:.76rem;color:var(--muted);font-weight:700}
+
+/* TEXT TIERS */
+.tiers{background:linear-gradient(160deg,#0f172a,#1e293b);border-radius:26px;padding:54px 46px;color:#e2e8f0;box-shadow:0 40px 80px rgba(15,23,42,.4);position:relative;overflow:hidden}
+.tiers::before{content:'';position:absolute;top:-100px;right:-100px;width:340px;height:340px;background:radial-gradient(circle,rgba(108,99,255,.35),transparent 70%);border-radius:50%}
+.tiers h2{color:#fff;font-size:2rem;font-weight:900;margin-bottom:10px;position:relative}
+.tiers>p{color:#94a3b8;margin-bottom:34px;position:relative;max-width:640px}
+.dod-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;position:relative}
+.dod-item{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:20px 22px;display:flex;gap:14px;align-items:flex-start;transition:.3s}
+.dod-item:hover{background:rgba(255,255,255,.09);transform:translateY(-4px)}
+.dod-item .tick{width:26px;height:26px;min-width:26px;border-radius:8px;background:var(--secondary);display:grid;place-items:center;color:#fff;font-weight:900;font-size:.75rem}
+.dod-item b{display:block;color:#fff;font-size:.95rem;margin-bottom:4px}
+.dod-item small{color:#94a3b8;font-size:.81rem;line-height:1.55}
+
+/* ARCHITECTURE */
+.arch{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:20px}
+.arch-col{background:var(--surface);border-radius:20px;padding:26px;box-shadow:var(--shadow);border:1px solid var(--border);border-top:4px solid var(--primary)}
+.arch-col:nth-child(2){border-top-color:var(--indigo)}
+.arch-col:nth-child(3){border-top-color:var(--secondary)}
+.arch-col h4{font-size:1rem;font-weight:900;margin-bottom:16px;display:flex;align-items:center;gap:9px}
+.arch-col ul{list-style:none;display:flex;flex-direction:column;gap:11px}
+.arch-col li{font-size:.87rem;color:var(--muted);display:flex;gap:9px;align-items:center}
+.arch-col li::before{content:'▸';color:var(--primary);font-weight:900}
+
+/* GLOSSARY */
+.gloss{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
+.gcard{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 26px;box-shadow:var(--shadow);text-align:center;min-width:170px;transition:.3s}
+.gcard:hover{transform:translateY(-5px);border-color:var(--primary)}
+.gcard b{font-size:1.5rem;font-weight:900;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-family:'JetBrains Mono',monospace}
+.gcard span{display:block;font-size:.82rem;color:var(--muted);font-weight:700;margin-top:4px}
+.gcard small{font-size:.72rem;color:var(--muted)}
+
+/* REVIEW 25 */
+.review-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.q{background:var(--surface);border:1px solid var(--border);border-radius:15px;padding:18px 22px;display:flex;gap:14px;box-shadow:var(--shadow);transition:.3s}
+.q:hover{transform:translateY(-4px);border-color:var(--primary)}
+.q .n{font-family:'JetBrains Mono',monospace;font-weight:800;color:var(--primary);font-size:.95rem;min-width:30px}
+.q p{font-size:.9rem;color:var(--text)}
+
+/* TEAM */
+.team{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px}
+.member{background:var(--surface);border-radius:var(--radius);padding:30px 22px;text-align:center;box-shadow:var(--shadow);border:1px solid var(--border);transition:.35s}
+.member:hover{transform:translateY(-8px);box-shadow:var(--shadow-lg)}
+.avatar{width:78px;height:78px;border-radius:50%;background:var(--grad);display:grid;place-items:center;color:#fff;font-weight:900;font-size:1.5rem;margin:0 auto 16px;box-shadow:0 10px 26px rgba(108,99,255,.4)}
+.member h4{font-size:1.02rem;font-weight:800}
+.role{display:inline-block;margin-top:9px;background:color-mix(in srgb,var(--primary) 12%,transparent);color:var(--primary);font-size:.7rem;font-weight:800;padding:5px 14px;border-radius:999px;letter-spacing:.06em}
+.role.sm{background:rgba(255,107,107,.16);color:var(--accent)}
+.role.po{background:rgba(52,168,83,.16);color:var(--secondary)}
+.member p{font-size:.82rem;color:var(--muted);margin-top:11px}
+
+/* MARQUEE */
+.marquee{overflow:hidden;position:relative;padding:26px 0;mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.marquee-track{display:flex;gap:44px;width:max-content;animation:scroll 26s linear infinite}
+.marquee:hover .marquee-track{animation-play-state:paused}
+@keyframes scroll{to{transform:translateX(-50%)}}
+.tech{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:15px 30px;font-weight:800;font-size:.92rem;box-shadow:0 6px 18px rgba(0,0,0,.05);white-space:nowrap;transition:.3s}
+.tech:hover{border-color:var(--primary);color:var(--primary)}
+
+/* CTA */
+.cta{background:var(--grad);border-radius:28px;padding:70px 44px;text-align:center;color:#fff;box-shadow:0 40px 80px rgba(26,115,232,.35);position:relative;overflow:hidden}
+.cta::after{content:'';position:absolute;width:360px;height:360px;background:rgba(255,255,255,.14);border-radius:50%;top:-150px;right:-110px}
+.cta::before{content:'';position:absolute;width:260px;height:260px;background:rgba(255,255,255,.1);border-radius:50%;bottom:-130px;left:-80px}
+.cta h2{font-size:clamp(1.9rem,4.2vw,2.9rem);font-weight:900;margin-bottom:16px;position:relative}
+.cta p{opacity:.94;max-width:600px;margin:0 auto 32px;position:relative;font-size:1.05rem}
+.btn-white{background:#fff;color:var(--primary);position:relative;font-weight:900}
+.btn-white:hover{transform:translateY(-4px) scale(1.03);box-shadow:0 20px 44px rgba(0,0,0,.25)}
+
+/* FOOTER */
+footer{background:#070b14;color:#94a3b8;padding:64px 0 34px;margin-top:96px;position:relative;z-index:2}
+.foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:44px;margin-bottom:40px}
+.foot-grid h5{color:#fff;font-weight:800;margin-bottom:16px;font-size:.95rem;letter-spacing:.04em}
+.foot-grid a,.foot-grid p{display:block;color:#94a3b8;text-decoration:none;font-size:.88rem;margin-bottom:10px;transition:.25s}
+.foot-grid a:hover{color:#fff;transform:translateX(4px)}
+.foot-bot{border-top:1px solid rgba(255,255,255,.09);padding-top:26px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;font-size:.82rem}
+
+/* reveal */
+.reveal{opacity:0;transform:translateY(38px);transition:all .8s cubic-bezier(.2,.8,.2,1)}
+.reveal.on{opacity:1;transform:none}
+
+/* back to top */
+#top-btn{position:fixed;bottom:28px;right:28px;width:52px;height:52px;border-radius:16px;background:var(--grad);color:#fff;border:0;font-size:1.3rem;cursor:pointer;box-shadow:0 12px 30px rgba(26,115,232,.45);opacity:0;pointer-events:none;transition:.35s;z-index:98}
+#top-btn.show{opacity:1;pointer-events:all}
+#top-btn:hover{transform:translateY(-4px) scale(1.08)}
+
+@media(max-width:920px){
+  .showcase,.metrics{grid-template-columns:1fr}
+  .arch{grid-template-columns:1fr}
+  .sprint{grid-template-columns:58px 1fr;gap:16px}
+  .sprint .pill{grid-column:1/-1;justify-self:start}
+  .foot-grid{grid-template-columns:1fr}
+  .nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg);flex-direction:column;padding:20px 24px;border-bottom:1px solid var(--border);box-shadow:var(--shadow);align-items:flex-start}
+  .nav-links.open{display:flex}
+  .burger{display:block}
+  .tiers{padding:40px 26px}
+  .bar-row .lbl{width:110px;font-size:.78rem}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="glow"></div>
+
+<nav>
+  <div class="nav-in">
+    <a class="logo" href="#top"><span class="logo-badge">N</span>NEXA</a>
+    <ul class="nav-links" id="menu">
+      <li><a href="#features">Funcionalidades</a></li>
+      <li><a href="#app">La App</a></li>
+      <li><a href="#metrics">Métricas</a></li>
+      <li><a href="#sprints">Sprints</a></li>
+      <li><a href="#team">Equipo</a></li>
+      <li><a href="#dod">Calidad</a></li>
+      <li><button class="icon-btn" id="theme" title="Cambiar tema">🌙</button></li>
+      <li><a class="cta-top" href="#contacto">Descargar</a></li>
+    </ul>
+    <button class="burger" onclick="document.getElementById('menu').classList.toggle('open')">☰</button>
+  </div>
+</nav>
+
+<header id="top">
+  <canvas id="mesh"></canvas>
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="wrap">
+    <span class="eyebrow reveal"><span class="dot"></span>Proyecto Académico · TESH · Semestre 5</span>
+    <h1 class="reveal">Tu organización<br>académica,<br><span class="grad-text">simplificada.</span></h1>
+    <div class="type-wrap reveal"><span id="typed"></span><span class="cursor"></span></div>
+    <p class="hero-p reveal"><b>NEXA</b> organiza tus materias, tareas, exámenes y apuntes en un solo lugar. Funciona <b>sin conexión</b>, protege tus datos con <b>biometría</b> y usa <b>IA</b> para resumir y detectar fechas. Desarrollado con Scrum en 5 sprints.</p>
+    <div class="btn-row reveal">
+      <a class="btn btn-main" href="#app">Ver la aplicación →</a>
+      <a class="btn btn-ghost" href="#sprints">Plan Scrum</a>
+    </div>
+    <div class="stats">
+      <div class="stat reveal"><b data-count="173">0</b><span>Story Points</span></div>
+      <div class="stat reveal"><b data-count="43">0</b><span>Historias de Usuario</span></div>
+      <div class="stat reveal"><b data-count="15">0</b><span>Épicas</span></div>
+      <div class="stat reveal"><b data-count="60">0</b><span>Tareas</span></div>
+      <div class="stat reveal"><b data-count="5">0</b><span>Sprints</span></div>
+      <div class="stat reveal"><b data-count="8">0</b><span>Integrantes</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="marquee">
+  <div class="marquee-track" id="mq">
+    <span class="tech">Kotlin</span><span class="tech">Jetpack Compose</span><span class="tech">Material 3</span>
+    <span class="tech">Room / SQLite</span><span class="tech">Firebase Firestore</span><span class="tech">AlarmManager</span>
+    <span class="tech">BiometricPrompt</span><span class="tech">SAF + FileProvider</span><span class="tech">API 21+</span>
+    <span class="tech">Git / GitHub</span><span class="tech">Scrum</span><span class="tech">IA generativa</span>
+  </div>
+</div>
+
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Funcionalidades</span>
+      <h2>Todo lo que necesitas, en una app</h2>
+      <p>Un solo lugar para tu vida académica: del calendario a tus calificaciones, incluso cuando no tienes internet.</p>
+    </div>
+    <div class="feat-grid">
+      <div class="feat reveal"><div class="ico">📚</div><h3>Gestión de materias</h3><p>Organiza horarios, profesores, unidades y recursos por asignatura con una interfaz clara y rápida.</p></div>
+      <div class="feat reveal"><div class="ico">✅</div><h3>Tareas y pendientes</h3><p>Crea, edita y filtra tareas (pendientes, completadas, vencidas) con recordatorios inteligentes por fecha.</p></div>
+      <div class="feat reveal"><div class="ico">🗓️</div><h3>Calendario académico</h3><p>Vista mensual y semanal con exámenes, entregas y eventos; detección automática de fechas con IA.</p></div>
+      <div class="feat reveal"><div class="ico">📴</div><h3>Modo sin conexión</h3><p>Base de datos local con Room/SQLite: consulta y captura offline y sincroniza con Firestore al recuperar red.</p></div>
+      <div class="feat reveal"><div class="ico">🔒</div><h3>Bóveda biométrica</h3><p>Protege calificaciones y notas con huella o rostro. Tus datos nunca salen del dispositivo sin tu permiso.</p></div>
+      <div class="feat reveal"><div class="ico">🤖</div><h3>IA académica</h3><p>Resúmenes automáticos de apuntes, detección de fechas clave y planes de estudio personalizados.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="app" style="background:color-mix(in srgb,var(--primary) 6%,transparent)">
+  <div class="wrap showcase">
+    <div class="reveal">
+      <span class="sec-tag">La Aplicación</span>
+      <h2 style="font-size:clamp(1.9rem,4.2vw,2.9rem);font-weight:900;margin:14px 0 18px;letter-spacing:-.03em">Diseño limpio, Material Design 3</h2>
+      <p style="color:var(--muted);margin-bottom:28px">Interfaz minimalista con paleta institucional, grid de 4pt, modo claro/oscuro y estados vacíos y de carga cuidados. Pensada para pantallas de 360 a 412 dp.</p>
+      <ul class="check-list">
+        <li><span class="tick">✓</span><div><b>Dashboard inteligente</b><small>Resumen de materias, próximas entregas y recordatorios del día.</small></div></li>
+        <li><span class="tick">✓</span><div><b>Indicador "Sin conexión"</b><small>Sigue siendo útil en el metro, el camión o el salón sin wifi.</small></div></li>
+        <li><span class="tick">✓</span><div><b>Navegación consistente</b><small>Bottom navigation, cards de radio 12–16px y feedback con snackbar.</small></div></li>
+        <li><span class="tick">✓</span><div><b>Accesible</b><small>Objetivos táctiles ≥48dp, contraste AA y etiquetas para lectores de pantalla.</small></div></li>
+      </ul>
+    </div>
+    <div class="reveal">
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="app-bar">Hola, Egnis 👋<small>5º semestre · Grupo 3501</small></div>
+          <div class="app-body">
+            <div class="offline-bar">📴 Sin conexión · los cambios se sincronizarán</div>
+            <div class="mini-card"><div><b>Graficación</b><small>Examen Unidad 3 · Hoy 11:00</small></div><span class="chip warn">HOY</span></div>
+            <div class="mini-card"><div><b>Telecomunicaciones</b><small>Entrega práctica UTP · 22 oct</small></div><span class="chip info">3 días</span></div>
+            <div class="mini-card"><div><b>Sistemas Operativos</b><small>Tarea: tokens de llamadas</small></div><span class="chip ok">HECHO</span></div>
+            <div class="mini-card"><div><b>Ingeniería de Software</b><small>Sprint 1 cerrado · 34/34 pts</small></div><span class="chip ok">OK</span></div>
+            <div class="mini-card"><div><b>Notas con IA</b><small>3 resúmenes generados</small></div><span class="chip info">IA</span></div>
+          </div>
+          <div class="bottom-nav"><span class="on">🏠</span><span>📚</span><span>➕</span><span>📅</span><span>⚙️</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="metrics">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Métricas del producto</span>
+      <h2>Un backlog dimensionado con datos</h2>
+      <p>173 story points repartidos en 15 épicas, 43 historias de usuario y 60 tareas técnicas a lo largo de 5 sprints.</p>
+    </div>
+    <div class="metrics">
+      <div class="card reveal">
+        <div class="chart-title">Distribución de esfuerzo por sprint</div>
+        <div class="chart-sub">Story points comprometidos en cada iteración</div>
+        <div class="bar-row"><span class="lbl">Sprint 1 · Cimientos</span><div class="bar-track"><div class="bar-fill" data-w="87%" style="background:var(--grad2)"></div></div><span class="bar-val">34</span></div>
+        <div class="bar-row"><span class="lbl">Sprint 2 · Tareas</span><div class="bar-track"><div class="bar-fill" data-w="87%" style="background:linear-gradient(90deg,#1A73E8,#6C63FF)"></div></div><span class="bar-val">34</span></div>
+        <div class="bar-row"><span class="lbl">Sprint 3 · Evaluaciones</span><div class="bar-track"><div class="bar-fill" data-w="82%" style="background:linear-gradient(90deg,#6C63FF,#FF6B6B)"></div></div><span class="bar-val">32</span></div>
+        <div class="bar-row"><span class="lbl">Sprint 4 · Apoyo</span><div class="bar-track"><div class="bar-fill" data-w="87%" style="background:linear-gradient(90deg,#FF6B6B,#FF9A6B)"></div></div><span class="bar-val">34</span></div>
+        <div class="bar-row"><span class="lbl">Sprint 5 · Colaboración</span><div class="bar-track"><div class="bar-fill" data-w="100%" style="background:var(--grad)"></div></div><span class="bar-val">39</span></div>
+      </div>
+      <div class="card reveal">
+        <div class="chart-title">Estado actual</div>
+        <div class="chart-sub">Progreso general del proyecto</div>
+        <div class="mini-stats">
+          <div class="ms"><b data-count="20">0</b><span>% completado</span></div>
+          <div class="ms"><b data-count="34">0</b><span>pts entregados</span></div>
+          <div class="ms"><b data-count="100">0</b><span>% S1 cerrado</span></div>
+          <div class="ms"><b data-count="5">0</b><span>semanas restantes</span></div>
+        </div>
+        <p style="color:var(--muted);font-size:.88rem;margin-top:22px">📈 El Sprint 1 cerró completo con <b>34/34 pts</b>, incremento entregado y la <b>APK en fase de prueba</b> para revisión del equipo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="sprints">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Plan Scrum</span>
+      <h2>5 sprints. 10 semanas. Una meta.</h2>
+      <p>Del 12 de octubre al 20 de diciembre de 2026, con revisiones, retrospectivas y Definition of Done estricta en cada entrega.</p>
+    </div>
+    <div class="sprint-track">
+      <div class="sprint done reveal">
+        <div class="num">1</div>
+        <div><h3>Cimientos</h3><div class="dates">12/10 – 25/10 · 34 pts</div><div class="ep">EP-01 Configuración inicial · EP-02 Arquitectura base · HU-36 Interfaz base · HU-42 Modo sin conexión</div>
+        <div class="prog"><i data-w="100%"></i></div></div>
+        <span class="pill done">✓ CERRADO · APK EN PRUEBA</span>
+      </div>
+      <div class="sprint reveal">
+        <div class="num">2</div>
+        <div><h3>Tareas y experiencia</h3><div class="dates">26/10 – 08/11 · 34 pts</div><div class="ep">EP-03 Tareas · EP-04 Experiencia · HU-37 Búsqueda · HU-38 Login</div>
+        <div class="prog"><i data-w="8%"></i></div></div>
+        <span class="pill plan">EN PLANEACIÓN</span>
+      </div>
+      <div class="sprint reveal">
+        <div class="num">3</div>
+        <div><h3>Evaluaciones y avisos</h3><div class="dates">09/11 – 22/11 · 32 pts</div><div class="ep">EP-06 Evaluaciones · EP-07 Avisos y recordatorios</div>
+        <div class="prog"><i data-w="0%"></i></div></div>
+        <span class="pill plan">PLANIFICADO</span>
+      </div>
+      <div class="sprint reveal">
+        <div class="num">4</div>
+        <div><h3>Apoyo académico</h3><div class="dates">23/11 – 06/12 · 34 pts</div><div class="ep">EP-05 · EP-08 · EP-09 · EP-11 · HU-43</div>
+        <div class="prog"><i data-w="0%"></i></div></div>
+        <span class="pill plan">PLANIFICADO</span>
+      </div>
+      <div class="sprint reveal">
+        <div class="num">5</div>
+        <div><h3>Colaboración e IA</h3><div class="dates">07/12 – 20/12 · 39 pts</div><div class="ep">EP-10 Colaboración · EP-12 Notas IA · EP-14 Plan de estudio</div>
+        <div class="prog"><i data-w="0%"></i></div></div>
+        <span class="pill plan">PLANIFICADO</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="arch" style="background:color-mix(in srgb,var(--indigo) 6%,transparent)">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Arquitectura</span>
+      <h2>Diseño desacoplado y offline-first</h2>
+      <p>Separación por capas para que la app sea testeable, escalable y funcione aunque no haya internet.</p>
+    </div>
+    <div class="arch">
+      <div class="arch-col reveal"><h4>🧩 Presentación</h4><ul><li>Jetpack Compose + Material 3</li><li>ViewModels con StateFlow</li><li>Navegación tipada</li><li>Tema claro / oscuro</li></ul></div>
+      <div class="arch-col reveal"><h4>⚙️ Dominio</h4><ul><li>Casos de uso desacoplados</li><li>Modelos de negocio puros</li><li>Validaciones centralizadas</li><li>Reglas de priorización</li></ul></div>
+      <div class="arch-col reveal"><h4>🗄️ Datos</h4><ul><li>Room / SQLite offline-first</li><li>Firebase Firestore en la nube</li><li>Repositorios con sincronización</li><li>AlarmManager y biometría</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section id="glossary">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Glosario Scrum</span>
+      <h2>El lenguaje de NEXA</h2>
+      <p>Todo el equipo comparte el mismo vocabulario para leer el backlog sin confusiones.</p>
+    </div>
+    <div class="gloss">
+      <div class="gcard reveal"><b>EP</b><span>Épica</span><small>15 en el proyecto</small></div>
+      <div class="gcard reveal"><b>HU</b><span>Historia de Usuario</span><small>43 user stories</small></div>
+      <div class="gcard reveal"><b>PoC</b><span>Story Points</span><small>173 en total</small></div>
+      <div class="gcard reveal"><b>DoD</b><span>Definition of Done</span><small>8 criterios de calidad</small></div>
+      <div class="gcard reveal"><b>PO</b><span>Product Owner</span><small>Egnis Piliado</small></div>
+      <div class="gcard reveal"><b>SM</b><span>Scrum Master</span><small>Roberto López</small></div>
+    </div>
+  </div>
+</section>
+
+<section id="dod">
+  <div class="wrap">
+    <div class="tiers reveal">
+      <h2>Definition of Done</h2>
+      <p>Ninguna historia se da por terminada sin cumplir esta lista, revisada en la Sprint Review con el Product Owner.</p>
+      <div class="dod-grid">
+        <div class="dod-item"><span class="tick">✓</span><div><b>Desarrollo</b><small>Funcionalidad implementada, convenciones de código y revisión registrada en el repositorio.</small></div></div>
+        <div class="dod-item"><span class="tick">✓</span><div><b>Pruebas unitarias</b><small>Todas las pruebas pasan sin fallos y el código cumple los estándares del equipo.</small></div></div>
+        <div class="dod-item"><span class="tick">✓</span><div><b>Pruebas de integración</b><small>La app se integra con Room, Firestore y las notificaciones correctamente.</small></div></div>
+        <div class="dod-item"><span class="tick">✓</span><div><b>QA en 2 dispositivos</b><small>Validado en al menos dos dispositivos físicos o emuladores con API 21+.</small></div></div>
+        <div class="dod-item"><span class="tick">✓</span><div><b>Modo oscuro</b><small>Todas las pantallas respetan el tema claro y oscuro con contraste AA.</small></div></div>
+        <div class="dod-item"><span class="tick">✓</span><div><b>Offline</b><small>La funcionalidad opera sin conexión cuando el alcance lo requiere.</small></div></div>
+        <div class="dod-item"><span class="tick">✓</span><div><b>Criterios de aceptación</b><small>Cada CA verificado y aprobado por el PO en la revisión.</small></div></div>
+        <div class="dod-item"><span class="tick">✓</span><div><b>Documentado</b><small>Incremento, decisiones y evidencias actualizados en la documentación del sprint.</small></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="review">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Sprint Review</span>
+      <h2>Las 25 preguntas que respondemos cada sprint</h2>
+      <p>Nuestro checklist de inspección del incremento: qué se logró, qué falta, qué aprendimos y qué sigue.</p>
+    </div>
+    <div class="review-grid" id="review-grid"></div>
+  </div>
+</section>
+
+<section id="team">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Equipo Scrum</span>
+      <h2>Equipo 8 · NEXA</h2>
+      <p>Ocho personas, roles claros y un objetivo compartido: entregar una app que le sirva al estudiante.</p>
+    </div>
+    <div class="team">
+      <div class="member reveal"><div class="avatar">EP</div><h4>Egnis Yaxel Piliado Montaño</h4><span class="role po">PRODUCT OWNER</span><p>Líder del proyecto · define el backlog y prioriza por valor.</p></div>
+      <div class="member reveal"><div class="avatar">RL</div><h4>Roberto Daniel López García</h4><span class="role sm">SCRUM MASTER</span><p>Facilita Scrum, quita impedimentos y protege el proceso.</p></div>
+      <div class="member reveal"><div class="avatar">JB</div><h4>José Barreto</h4><span class="role">DEVELOPER</span><p>Soporte técnico y documentación.</p></div>
+      <div class="member reveal"><div class="avatar">LL</div><h4>Luis Ángel Lorenzo</h4><span class="role">DEVELOPER · UX/UI</span><p>Experiencia de usuario e interfaz.</p></div>
+      <div class="member reveal"><div class="avatar">AG</div><h4>Ariadna Jazmín García Segura</h4><span class="role">DEVELOPER · QA</span><p>Aseguramiento de calidad funcional.</p></div>
+      <div class="member reveal"><div class="avatar">LF</div><h4>Luis Flores</h4><span class="role">DEVELOPER · QA</span><p>Pruebas multi-dispositivo.</p></div>
+      <div class="member reveal"><div class="avatar">SV</div><h4>Santiago Vigil</h4><span class="role">DEVELOPER</span><p>Análisis de requisitos.</p></div>
+      <div class="member reveal"><div class="avatar">FB</div><h4>Fátima Bautista</h4><span class="role">DEVELOPER</span><p>Marketing y comunicación del producto.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="contacto">
+  <div class="wrap">
+    <div class="cta reveal">
+      <h2>¿Quieres ver el avance de NEXA?</h2>
+      <p>Sigue el proyecto: Sprint 1 cerrado con incremento entregado y APK en prueba. Consulta el backlog, las evidencias y las gráficas de progreso en nuestro repositorio.</p>
+      <a class="btn btn-white" href="https://github.com" target="_blank" rel="noopener">Ver en GitHub →</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="logo" href="#top" style="color:#fff;margin-bottom:16px"><span class="logo-badge">N</span>NEXA</a>
+        <p>Tu organización académica, simplificada. Asistente académico desarrollado con metodología Scrum para la materia Fundamentos de Ingeniería de Software.</p>
+        <p>TESH · Tecnológico de Estudios Superiores de Huixquilucan · Semestre 5 · Grupo 3501</p>
+      </div>
+      <div>
+        <h5>Proyecto</h5>
+        <a href="#features">Funcionalidades</a>
+        <a href="#metrics">Métricas</a>
+        <a href="#sprints">Plan de sprints</a>
+        <a href="#dod">Definition of Done</a>
+        <a href="#team">Equipo Scrum</a>
+      </div>
+      <div>
+        <h5>Documentos</h5>
+        <a href="#">Product Backlog</a>
+        <a href="#review">Sprint Review</a>
+        <a href="#app">Diseño de interfaces</a>
+        <a href="#arch">Arquitectura</a>
+      </div>
+    </div>
+    <div class="foot-bot">
+      <span>© 2026 NEXA · Equipo 8 — Todos los derechos reservados.</span>
+      <span class="mono">Hecho con Kotlin, Compose y mucho café ☕</span>
+    </div>
+  </div>
+</footer>
+
+<button id="top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+/* ---------- THEME ---------- */
+const themeBtn=document.getElementById('theme');
+themeBtn.onclick=()=>{document.documentElement.classList.toggle('dark');
+  themeBtn.textContent=document.documentElement.classList.contains('dark')?'☀️':'🌙';};
+
+/* ---------- SCROLL PROGRESS ---------- */
+const prog=document.getElementById('progress'), topBtn=document.getElementById('top-btn');
+addEventListener('scroll',()=>{
+  const h=document.documentElement.scrollHeight-innerHeight;
+  prog.style.width=(scrollY/h*100)+'%';
+  topBtn.classList.toggle('show',scrollY>600);
+});
+
+/* ---------- CURSOR GLOW ---------- */
+const glow=document.getElementById('glow');
+addEventListener('mousemove',e=>{glow.style.left=e.clientX+'px';glow.style.top=e.clientY+'px';});
+
+/* ---------- HERO CANVAS PARTICLES ---------- */
+const cv=document.getElementById('mesh'), ctx=cv.getContext('2d');
+let W,H,parts=[];
+function fit(){W=cv.width=cv.offsetWidth;H=cv.height=cv.offsetHeight;
+  const n=Math.min(70,Math.floor(W/22));parts=[];
+  for(let i=0;i<n;i++)parts.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,r:Math.random()*1.8+.6});}
+fit();addEventListener('resize',fit);
+function draw(){
+  const dark=document.documentElement.classList.contains('dark');
+  ctx.clearRect(0,0,W,H);
+  parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);
+    ctx.fillStyle=dark?'rgba(148,163,184,.5)':'rgba(26,115,232,.35)';ctx.fill();});
+  for(let i=0;i<parts.length;i++)for(let j=i+1;j<parts.length;j++){
+    const dx=parts[i].x-parts[j].x,dy=parts[i].y-parts[j].y,d=Math.hypot(dx,dy);
+    if(d<130){ctx.beginPath();ctx.moveTo(parts[i].x,parts[i].y);ctx.lineTo(parts[j].x,parts[j].y);
+      ctx.strokeStyle=dark?`rgba(108,99,255,${.18*(1-d/130)})`:`rgba(108,99,255,${.14*(1-d/130)})`;
+      ctx.lineWidth=.8;ctx.stroke();}}
+  requestAnimationFrame(draw);
+}
+draw();
+
+/* ---------- TYPEWRITER ---------- */
+const phrases=['Offline-first, siempre disponible.','Biometría que protege tus notas.','IA que resume y agenda por ti.','Scrum: 5 sprints, una meta.'];
+const el=document.getElementById('typed');let pi=0,ci=0,del=false;
+function type(){
+  const txt=phrases[pi];
+  el.textContent=del?txt.slice(0,--ci):txt.slice(0,++ci);
+  let sp=del?38:75;
+  if(!del&&ci===txt.length){sp=1600;del=true;}
+  else if(del&&ci===0){del=false;pi=(pi+1)%phrases.length;sp=320;}
+  setTimeout(type,sp);
+}
+type();
+
+/* ---------- 25 SPRINT REVIEW QUESTIONS ---------- */
+const QS=['¿Qué objetivo se estableció para este Sprint?','¿Qué resultados concretos hemos obtenido?','¿Qué funcionalidades están terminadas según la DoD?','¿Qué elementos no se terminaron y por qué?','¿Qué Increment puede evaluarse actualmente?','¿Qué evidencia demuestra el cumplimiento de calidad?','¿Qué aprendimos durante el desarrollo?','¿Qué problema del usuario resuelve lo presentado?','¿Cómo se comporta la solución en uso real?','¿Qué criterios de aceptación se satisfacen?','¿Qué limitaciones o defectos se identificaron?','¿Es accesible, segura y adecuada para el usuario?','¿Qué comentarios tienen los interesados?','¿Qué diferencia hay entre lo esperado y lo observado?','¿La funcionalidad responde a la necesidad original?','¿Qué beneficio aporta al usuario u organización?','¿Cambiaron las prioridades o condiciones del negocio?','¿Surgieron nuevas oportunidades a considerar?','¿Qué comentarios influirán en la dirección futura?','¿Qué riesgos requieren atención?','¿Qué mantener, modificar o descartar en la estrategia?','¿Qué nuevos elementos sumar al Product Backlog?','¿Qué elementos reordenar por valor o urgencia?','¿Qué resultado sería más valioso para el próximo Sprint?','¿Cómo contribuye esto al Product Goal?'];
+const rg=document.getElementById('review-grid');
+QS.forEach((q,i)=>{const d=document.createElement('div');d.className='q reveal';
+  d.innerHTML=`<span class="n">${String(i+1).padStart(2,'0')}</span><p>${q}</p>`;rg.appendChild(d);});
+
+/* ---------- MARQUEE DUPLICATE ---------- */
+const mq=document.getElementById('mq');mq.innerHTML+=mq.innerHTML;
+
+/* ---------- REVEAL + ANIMATIONS ---------- */
+const io=new IntersectionObserver(es=>es.forEach(e=>{
+  if(e.isIntersecting){e.target.classList.add('on');
+    e.target.querySelectorAll('[data-w]').forEach(b=>b.style.width=b.dataset.w);
+    e.target.querySelectorAll('[data-count]').forEach(countUp);
+    if(e.target.dataset.count)countUp(e.target);
+    io.unobserve(e.target);}
+}),{threshold:.14});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+function countUp(el){const t=+el.dataset.count;if(el.dataset.done)return;el.dataset.done=1;
+  let n=0;const s=t/50||1;const iv=setInterval(()=>{n+=s;if(n>=t){n=t;clearInterval(iv)}el.textContent=Math.round(n)},16);}
+
+/* ---------- CARD TILT ---------- */
+document.querySelectorAll('.feat,.member,.gcard').forEach(c=>{
+  c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+    c.style.transform=`translateY(-8px) rotateX(${-y*6}deg) rotateY(${x*6}deg)`;});
+  c.addEventListener('mouseleave',()=>{c.style.transform='';});
+});
+</script>
+</body>
+</html>
